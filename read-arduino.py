@@ -5,6 +5,7 @@ Created on Mon Jan 27 13:41:30 2020
 @author: hella
 """
 
+import os
 import serial
 import time
 import pandas as pd
@@ -14,12 +15,11 @@ from plotly import graph_objs as go
 
 port     = 'COM8'  # Port connected to Arduino Leonardo
 baudrate = 9600    # Transmission rate
+filepath = os.getcwd() + "/data/emg_gaehnen.xlsx" 
 emg_df   = pd.DataFrame(columns = ['timestamp', 'emg_val'])
-filepath = r"C:\Users\hella\Desktop\emg.csv"#.format(str(time.hour))  # Path on which data is saved
 
 
-
-output_file = open(filepath, "w+");
+#output_file = open(filepath, "w+");
 try:
     ser = serial.Serial(port, baudrate, timeout=0)  
 except:
@@ -27,23 +27,24 @@ except:
 else:     
     print('Port opened')
     try:
-        while True:
+        start = time.time()
+        while (time.time() - start) < 120:
             try:
                 emg_val    = ser.readline()
                 emg_val    = str(emg_val).split("b'")[1].split("\\r\\n'")[0]
                 timestamp  = time.time()
                 emg_df = emg_df.append({'timestamp': timestamp, 'emg_val':emg_val}, ignore_index=True)
-                time.sleep(1)
+                time.sleep(0.01)
     #            line = "{}: {} \n".format(str(timestamp), str(val.strip()))
     #            output_file.write(line)                
             except serial.SerialTimeoutException:
                  print('SerialTimeoutException: Data could not be read')
-                 time.sleep(1)        
+                 time.sleep(0.01)        
     except KeyboardInterrupt:   # kill loop on keyboard interrupt (Strg+C)
         pass
     ser.close()     # close serial port
-    emg_df.to_csv(output_file, index=False)  
-    output_file.close()
+    emg_df.to_excel(filepath)  
+  #  output_file.close()
     
     # Plot data with  plotly
     x = emg_df.timestamp - emg_df.timestamp[0]
