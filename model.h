@@ -2,6 +2,7 @@
 /**
  * Compute kernel between feature vector and support vector.
  * Kernel type: poly
+ * Output of micromlgen of SVM Classifier
  */
 double compute_kernel(double x[15], int nfeatures, ...) {
     va_list w;
